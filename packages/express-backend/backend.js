@@ -17,10 +17,11 @@ const findUserByName = (name) => {
 
 app.get("/users", (req, res) => {
   const name = req.query.name;
-  if (name != undefined) {
-    let result = findUserByName(name);
-    result = { users_list: result };
-    res.send(result);
+  const job = req.query.job;
+
+  if (name !== undefined || job !== undefined) {
+    const result = findUsersByQuery(name, job);
+    res.send({ users_list: result });
   } else {
     res.send(users);
   }
@@ -50,6 +51,33 @@ app.post("/users", (req, res) => {
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`);
 });
+
+const deleteUserById = (id) => {
+  const index = users["users_list"].findIndex((user) => user["id"] === id);
+  if (index === -1) {
+    return undefined;
+  }
+  return users["users_list"].splice(index, 1)[0];
+};
+app.delete("/users/:id", (req, res) => {
+  const id = req.params["id"];
+  const deletedUser = deleteUserById(id);
+
+  if (deletedUser === undefined) {
+    res.status(404).send("Resource not found.");
+  } else {
+    res.send(deletedUser);
+  }
+});
+
+const findUsersByQuery = (name, job) => {
+  return users["users_list"].filter((user) => {
+    const matchesName = name === undefined || user["name"] === name;
+    const matchesJob = job === undefined || user["job"] === job;
+    return matchesName && matchesJob;
+  });
+};
+
 const users = {
   users_list: [
     {
