@@ -17,31 +17,58 @@ function MyApp() {
     });
   }, []);
 
-  function removeOneCharacter(index) {
-    const updated = characters.filter((character, i) => {
-      return i !== index;
-    });
-    setCharacters(updated);
+  function removeOneCharacter(id) {
+    deleteUser(id)
+      .then((response) => {
+        if (response.status === 204) {
+          const updated = characters.filter((character) => {
+            return character.id !== id;
+          });
+          setCharacters(updated);
+        } else if (response.status === 404) {
+          console.log("Resource not found.");
+        } else {
+          console.log("Delete failed.");
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+      });
   }
-  function postUser(person) {
-  const promise = fetch("Http://localhost:8000/users", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(person),
-  });
 
-  return promise;
-}
+  function postUser(person) {
+    return fetch("http://localhost:8000/users", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(person),
+    });
+  }
 
   function fetchUsers() {
     const promise = fetch("http://localhost:8000/users");
     return promise;
   }
-  function updateList(person) {
+
+  function deleteUser(id) {
+  return fetch(`http://localhost:8000/users/${id}`, {
+    method: "DELETE",
+  });
+  }
+
+ function updateList(person) {
   postUser(person)
-    .then(() => setCharacters([...characters, person]))
+    .then((response) => {
+      if (response.status === 201) {
+        return response.json();
+      } else {
+        throw new Error("User was not created.");
+      }
+    })
+    .then((newUser) => {
+      setCharacters([...characters, newUser]);
+    })
     .catch((error) => {
       console.log(error);
     });
