@@ -41,6 +41,11 @@ app.get("/users/:id", (req, res) => {
     res.send(result);
   }
 });
+
+const generateId = () => {
+  return Math.random().toString(36).substring(2, 8);
+};
+
 const addUser = (user) => {
   users["users_list"].push(user);
   return user;
@@ -48,8 +53,15 @@ const addUser = (user) => {
 
 app.post("/users", (req, res) => {
   const userToAdd = req.body;
-  addUser(userToAdd);
-  res.status(201).send();
+
+  const newUser = {
+    id: generateId(),
+    name: userToAdd.name,
+    job: userToAdd.job,
+  };
+
+  addUser(newUser);
+  res.status(201).send(newUser);
 });
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`);
